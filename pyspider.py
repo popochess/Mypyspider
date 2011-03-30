@@ -29,6 +29,7 @@ class pyspider(object):
         self.followed_depth = 0
         self.URLdepth = 1
         self.followedURLs = []
+        self.follow_num = 0
         self.ignorefile = ".avi|.jpg|.JPG|.doc|.ai|.avi|.mpg|.flv|.pdf|.xls|.ppt|.docx|.png"
         self.tree_arr = {}
 
@@ -37,6 +38,7 @@ class pyspider(object):
         #first run
         self.followedURLs = []
         self.followedURLs.append(self.root)
+        self.follow_num = self.follow_num + 1
 
         page = Fetch(self.root)
         page.get_pageURLs()
@@ -70,12 +72,13 @@ class pyspider(object):
                 
                 if url_q not in self.followedURLs : 
                     try:
-                        print "ready to fetch =>"+str(d)+":"+url+"*****"
+                        print "ready to fetch =>"+str(d)+":"+url_q+"*****"
                         #print str(d)+":"+url_q+"*****"
                         #print "fetch a link!"
                         
                         if d<self.depth and re.search(self.ignorefile,url_q) == None:
                             page = Fetch(url_q)    
+                            self.follow_num = self.follow_num + 1
                             page.get_pageURLs()
                             for i,url_e in enumerate(page):
                                 host = urlparse.urlparse(url_e)[1]
@@ -117,6 +120,7 @@ class pyspider(object):
         print "\n"*5
         print "print the tree map!!!\n\n"
         self.print_tree()
+        print "total fetched URL numbers =>"+str(self.follow_num)
 
     def print_tree(self):
 
@@ -211,6 +215,7 @@ class Fetch(object):
         if handle:
             try:
                 content = unicode(handle.open(request).read(), "utf-8", errors="replace")
+                self.html_parser(content)
                 soup = BeautifulSoup(content)
                 tags = soup('a')
             except urllib2.HTTPError, error:
@@ -230,14 +235,17 @@ class Fetch(object):
                    url = self.url_join(self.url, href)
                    if url is not self.url and url != None:
                        self.urls.append(url)
-                        
+    def html_parser(self,page):       
+        #print page
+        pass
+        
                     
     def url_join(self,url, href):
         
         joined_url = urlparse.urljoin(url, href)
-        if len(joined_url.split("http://"))>2:
+        if len(joined_url.split("http://"))>2:  #no outside link
             joined_url = None
-            
+         
 
         return joined_url 
         
